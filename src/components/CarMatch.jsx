@@ -12,6 +12,7 @@ const CarMatch = (props) => {
     const durationInSeconds = parseFloat(props.duration) || 0; // Duration in seconds
     const people = parseInt(props.people, 10) || 0;
     const budget = parseFloat(props.budget) || 0;
+    console.log(newChat);
 
     // Convert duration from seconds to hours
     const totalHours = durationInSeconds / 3600;

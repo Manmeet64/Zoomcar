@@ -57,31 +57,34 @@ const CarSearch = () => {
             if (data.results.length > 0) {
                 const formattedAddress = data.results[0].formatted_address;
                 setFormatted(formattedAddress);
-                setLocality(
+                const localityComponent =
                     data.results[0].address_components.find((component) =>
                         component.types.includes("locality")
-                    )?.long_name || ""
+                    );
+                setLocality(
+                    localityComponent
+                        ? localityComponent.long_name.toLowerCase()
+                        : ""
                 );
-                setLocation(formattedAddress);
+                setFormatted(formattedAddress);
             } else {
-                setError("Failed to fetch address");
+                console.log("Failed to fetch address");
             }
         } catch (error) {
             console.log("Error fetching address:", error);
         }
     };
+
     const applyFilters = () => {
         let filtered = cars;
-
+        console.log("Hello", locality);
         // Filter by locality
-        if (locality && location) {
-            setSearchTerm(formatted);
-            console.log("Locality", locality);
-            console.log(filtered);
+        if (locality) {
             filtered = filtered.filter(
                 (car) =>
-                    car.location.locationCity.toLowerCase() ===
-                    locality.toLowerCase()
+                    car.location &&
+                    car.location.locationCity &&
+                    car.location.locationCity.toLowerCase() === locality
             );
         }
 
@@ -154,9 +157,9 @@ const CarSearch = () => {
         applyFilters();
     };
 
-    console.log(filteredCars);
     console.log(locality);
     console.log(formatted);
+    console.log(filteredCars);
 
     return (
         <>

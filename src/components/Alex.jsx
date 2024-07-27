@@ -5,6 +5,7 @@ import Map from "./Map";
 import styles from "./Alex.module.css";
 import useGetLocation from "./useGetLocation";
 import Weather from "./Weather";
+import { faL } from "@fortawesome/free-solid-svg-icons";
 function Alex() {
     const [textInput1, setTextInput1] = useState(""); // Origin
     const [textInput2, setTextInput2] = useState(""); // Destination
@@ -134,7 +135,8 @@ function Alex() {
             "Hello, where do you want to go today? Choose your route.";
         readOut(greetingMessage);
         setGreetingText(greetingMessage);
-        setShowInputs(true); // Show input fields after the greeting
+        setShowInputs(true);
+        setIsNewChat(false); // Show input fields after the greeting
     };
 
     const handleEnter = () => {

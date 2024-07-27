@@ -8,25 +8,25 @@ import {
 import styles from "./Map.module.css"; // Import the CSS module
 import useGetLocation from "./useGetLocation";
 import CarMatch from "./CarMatch";
+
 // Define the libraries outside of the component
 const MAP_LIBRARIES = ["places"];
 
 function Map(props) {
-    const { location, error } = useGetLocation();
+    const { location } = useGetLocation();
 
     // Provide default coordinates in case location is not yet available
     const defaultCenter = {
         lat: location?.latitude || 0,
         lng: location?.longitude || 0,
     };
-    console.log(location?.latitude); // Default center location
+
     const [center, setCenter] = useState(defaultCenter);
     const [map, setMap] = useState(null);
     const [directionResponse, setDirectionResponse] = useState(null);
     const [distance, setDistance] = useState("");
     const [duration, setDuration] = useState("");
     const [zoom, setZoom] = useState(16);
-    console.log(center);
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: "AIzaSyCi7wvXEC0r0td0KSSoeXzJNrUv5fYMNgw", // Replace with your actual API key
@@ -43,7 +43,7 @@ function Map(props) {
     }, [location]);
 
     useEffect(() => {
-        if (props.origin && isLoaded) {
+        if (props.origin && isLoaded && !props.chat) {
             const directionsService = new google.maps.DirectionsService();
             directionsService
                 .route({
@@ -60,7 +60,14 @@ function Map(props) {
                     console.error("Error fetching directions:", error);
                 });
         }
-    }, [isLoaded, props.origin, props.destination]);
+    }, [isLoaded, props.origin, props.destination, props.chat]);
+
+    // Effect to clear the route data when props.chat changes to true
+    useEffect(() => {
+        if (props.chat) {
+            clearRoute();
+        }
+    }, [props.chat]);
 
     const clearRoute = useCallback(() => {
         setDistance("");
@@ -78,7 +85,7 @@ function Map(props) {
     if (!isLoaded || !location) {
         return <div>Loading...</div>;
     }
-    console.log(props.chat);
+
     return (
         <>
             <div className={styles.frame}>
@@ -95,7 +102,7 @@ function Map(props) {
                     onLoad={(map) => setMap(map)}
                 >
                     <Marker position={center} />
-                    {directionResponse && props.chat && (
+                    {directionResponse && !props.chat && (
                         <DirectionsRenderer directions={directionResponse} />
                     )}
                 </GoogleMap>
@@ -105,7 +112,7 @@ function Map(props) {
                 <button onClick={centerPosition}>Center</button>
             </div>
             <div className={styles.carData}>
-                {distance !== "" && duration !== "" && (
+                {distance !== "" && duration !== "" && !props.chat && (
                     <CarMatch
                         distance={distance}
                         duration={duration}
