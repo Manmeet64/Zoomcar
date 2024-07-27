@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import useSpeechToText from "./hooks/useSpeechToText";
+import useSpeechToText from "./useSpeechToText";
 import { useJsApiLoader, Autocomplete } from "@react-google-maps/api";
 import Map from "./Map";
 import styles from "./Alex.module.css";
-import useGetLocation from "./hooks/useGetLocation.jsx"
+import useGetLocation from "./useGetLocation";
+import Weather from "./Weather";
 function Alex() {
     const [textInput1, setTextInput1] = useState(""); // Origin
     const [textInput2, setTextInput2] = useState(""); // Destination
@@ -14,7 +15,8 @@ function Alex() {
     const [spokenText3, setSpokenText3] = useState(""); // Track spoken text for budget
     const [spokenText4, setSpokenText4] = useState(""); // Track spoken text for people
     const [spokenText5, setSpokenText5] = useState("");
-    const [greetingText, setGreetingText] = useState(""); // Track greeting text
+    const [greetingText, setGreetingText] = useState("");
+    const [isNewChat, setIsNewChat] = useState(false); // Track greeting text // Track greeting text
 
     const { isListening, transcript, startListening, stopListening } =
         useSpeechToText({ continuous: true });
@@ -47,6 +49,7 @@ function Alex() {
 
         fetchVoices();
         window.speechSynthesis.onvoiceschanged = fetchVoices;
+        <Map />;
     }, []);
 
     const availableVoices = voices.filter((voice) => {
@@ -164,9 +167,11 @@ function Alex() {
             setMapProps({
                 origin: textInput1,
                 destination: textInput2,
-                latitude: location.latitude,
-                longitude: location.longitude,
+                people: people,
+                budget: budgetInput,
             });
+            setIsSubmitted(true);
+            console.log(budgetInput);
         }
     };
 
@@ -202,7 +207,7 @@ function Alex() {
 
     // Places API call code
     const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: "AIzaSyDcE7IHNEUboAbtJFeY7IqiHSSdqgzuvg8", // Replace with your actual API key
+        googleMapsApiKey: "AIzaSyCi7wvXEC0r0td0KSSoeXzJNrUv5fYMNgw", // Replace with your actual API key
         libraries: ["places"],
     });
 
@@ -210,8 +215,7 @@ function Alex() {
     const destinationRef = useRef();
     const [choose, setChoose] = useState("");
     const { location, error } = useGetLocation();
-    console.log("location",location);
-   
+    console.log("location", location);
 
     const handleLocationChange = useCallback(() => {
         const selected = document.getElementById("location");
@@ -222,16 +226,29 @@ function Alex() {
         ) {
             setChoose("Your location");
             originRef.current.value = `${location.latitude},${location.longitude}`;
+            let address_components_origin = [];
             fetch(
-                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.latitude},${location.longitude}&key=AIzaSyDcE7IHNEUboAbtJFeY7IqiHSSdqgzuvg8` // Replace with your actual API key
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.latitude},${location.longitude}&key=AIzaSyCi7wvXEC0r0td0KSSoeXzJNrUv5fYMNgw` // Replace with your actual API key
             )
                 .then((response) => response.json())
                 .then((data) => {
                     if (data.results && data.results[0]) {
+                        address_components_origin =
+                            data.results[0].address_components;
+                        console.log(address_components_origin);
                         originRef.current.value =
                             data.results[0].formatted_address;
                         console.log(data.results[0]);
                         setTextInput1(originRef.current.value);
+                        const city = address_components_origin.find(
+                            (component) =>
+                                component.types.includes("locality") ||
+                                component.types.includes(
+                                    "administrative_level_3"
+                                )
+                        );
+                        console.log(city.long_name);
+                        setCity(city.long_name);
                     }
                 })
                 .catch((err) => {
@@ -263,9 +280,14 @@ function Alex() {
         setMapProps({
             origin: "",
             destination: "",
-            latitude: null,
-            longitude: null,
+            people: "",
+            // latitude: null,
+            // longitude: null,
+            budget: "",
         });
+        setIsSubmitted(false);
+        setCity("");
+        setIsNewChat(true);
     };
     //Getting the city of origin for weather data
     const [city, setCity] = useState("");
@@ -275,7 +297,7 @@ function Alex() {
                 const address = originRef.current.value;
                 const formattedAddress = encodeURIComponent(address);
                 console.log(formattedAddress);
-                const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${formattedAddress}&key=AIzaSyDcE7IHNEUboAbtJFeY7IqiHSSdqgzuvg8`;
+                const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${formattedAddress}&key=AIzaSyCi7wvXEC0r0td0KSSoeXzJNrUv5fYMNgw`;
                 let addressComponent = [];
 
                 fetch(url)
@@ -302,17 +324,8 @@ function Alex() {
         [textInput1],
         [city]
     );
-    useEffect(() => {
-        fetch(
-            `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=0559e4b1492eb6a62f490e2c6c3897e4`
-        )
-            .then((response) => {
-                return response.json();
-            })
-            .then((data) => {
-                console.log(data);
-            });
-    }, [city]);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    console.log(city);
     return (
         <>
             <div className={styles.mainContainer}>
@@ -322,6 +335,9 @@ function Alex() {
                         destination={mapProps.destination}
                         latitude={mapProps.latitude}
                         longitude={mapProps.longitude}
+                        people={mapProps.people}
+                        budget={mapProps.budget}
+                        chat={isNewChat ? true : false}
                     />
                 </div>
                 <div className={styles.main}>
@@ -558,6 +574,9 @@ function Alex() {
                         </>
                     )}
                 </div>
+            </div>
+            <div className={styles.weather}>
+                {isSubmitted && <Weather city={city} />}
             </div>
         </>
     );

@@ -21,6 +21,7 @@
     "@react-three/drei": "^9.109.2",
     "@react-three/fiber": "^8.16.8",
     "@sketchfab/viewer-api": "^1.12.1",
+    "@vis.gl/react-google-maps": "^1.1.0",
     "bootstrap": "^5.3.3",
     "cors": "^2.8.5",
     "date-fns": "^3.6.0",

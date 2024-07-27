@@ -3,6 +3,8 @@ import "./CarSearch.css";
 import Car from "../components/Car";
 import Navbarcomp from "../components/Navbarcomp";
 import AboutUs from "../components/AboutUs";
+import useGetLocation from "../components/useGetLocation"; // Import your custom hook
+
 const CarSearch = () => {
     const [cars, setCars] = useState([]);
     const [filteredCars, setFilteredCars] = useState([]);
@@ -14,10 +16,22 @@ const CarSearch = () => {
         priceRange: 1000,
     });
     const [searchTerm, setSearchTerm] = useState("");
+    const [locality, setLocality] = useState("");
+    const [formatted, setFormatted] = useState("");
+
+    // Custom hook to get user location
+    const { location, error } = useGetLocation();
+    console.log(location);
 
     useEffect(() => {
         fetchCars();
     }, []);
+
+    useEffect(() => {
+        if (location) {
+            fetchLocality(location);
+        }
+    }, [location]);
 
     const fetchCars = async () => {
         try {
@@ -34,8 +48,42 @@ const CarSearch = () => {
         }
     };
 
+    const fetchLocality = async (location) => {
+        try {
+            const response = await fetch(
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.latitude},${location.longitude}&key=AIzaSyCi7wvXEC0r0td0KSSoeXzJNrUv5fYMNgw`
+            );
+            const data = await response.json();
+            if (data.results.length > 0) {
+                const formattedAddress = data.results[0].formatted_address;
+                setFormatted(formattedAddress);
+                setLocality(
+                    data.results[0].address_components.find((component) =>
+                        component.types.includes("locality")
+                    )?.long_name || ""
+                );
+                setLocation(formattedAddress);
+            } else {
+                setError("Failed to fetch address");
+            }
+        } catch (error) {
+            console.log("Error fetching address:", error);
+        }
+    };
     const applyFilters = () => {
         let filtered = cars;
+
+        // Filter by locality
+        if (locality && location) {
+            setSearchTerm(formatted);
+            console.log("Locality", locality);
+            console.log(filtered);
+            filtered = filtered.filter(
+                (car) =>
+                    car.location.locationCity.toLowerCase() ===
+                    locality.toLowerCase()
+            );
+        }
 
         // Filter by fuel type
         if (filters.fuelType.length > 0) {
@@ -105,168 +153,180 @@ const CarSearch = () => {
         setFilters({ ...filters, priceRange: parseInt(event.target.value) });
         applyFilters();
     };
+
     console.log(filteredCars);
+    console.log(locality);
+    console.log(formatted);
 
     return (
         <>
-        <Navbarcomp/>
-        <div className="header-image">
+            <Navbarcomp />
+            <div className="header-image">
                 <p>Car Search</p>
                 <div className="search-bar">
                     <input
                         type="text"
-                        placeholder="Search by car model"
+                        placeholder="Search by car model, location"
                         value={searchTerm}
                         onChange={handleSearchChange}
                     />
                 </div>
             </div>
-        <div className="car-search-container">
-            
-            <div className="sidebar">
-                <h3>Filters</h3>
-                <div className="filter-group">
-                    <h4>Fuel Type</h4>
-                    <label>
+            <div className="car-search-container">
+                <div className="sidebar">
+                    <h3>Filters</h3>
+                    <button className="search-btn" onClick={applyFilters}>
+                        Search
+                    </button>
+                    <div className="filter-group">
+                        <h4>Fuel Type</h4>
+                        <label>
+                            <input
+                                type="checkbox"
+                                value="Petrol"
+                                checked={filters.fuelType.includes("Petrol")}
+                                onChange={() =>
+                                    handleFilterChange("fuelType", "Petrol")
+                                }
+                            />
+                            Petrol
+                        </label>
+                        <label>
+                            <input
+                                type="checkbox"
+                                value="Diesel"
+                                checked={filters.fuelType.includes("Diesel")}
+                                onChange={() =>
+                                    handleFilterChange("fuelType", "Diesel")
+                                }
+                            />
+                            Diesel
+                        </label>
+                    </div>
+                    <div className="filter-group">
+                        <h4>Car Type</h4>
+                        <label>
+                            <input
+                                type="checkbox"
+                                value="SUV"
+                                checked={filters.carType.includes("SUV")}
+                                onChange={() =>
+                                    handleFilterChange("carType", "SUV")
+                                }
+                            />
+                            SUV
+                        </label>
+                        <label>
+                            <input
+                                type="checkbox"
+                                value="Sedan"
+                                checked={filters.carType.includes("Sedan")}
+                                onChange={() =>
+                                    handleFilterChange("carType", "Sedan")
+                                }
+                            />
+                            Sedan
+                        </label>
+                        <label>
+                            <input
+                                type="checkbox"
+                                value="Hatchback"
+                                checked={filters.carType.includes("Hatchback")}
+                                onChange={() =>
+                                    handleFilterChange("carType", "Hatchback")
+                                }
+                            />
+                            Hatchback
+                        </label>
+                    </div>
+                    <div className="filter-group">
+                        <h4>Seater</h4>
+                        <label>
+                            <input
+                                type="checkbox"
+                                value="5 seater"
+                                checked={filters.seater.includes("5 seater")}
+                                onChange={() =>
+                                    handleFilterChange("seater", "5 seater")
+                                }
+                            />
+                            5 Seater
+                        </label>
+                        <label>
+                            <input
+                                type="checkbox"
+                                value="7 seater"
+                                checked={filters.seater.includes("7 seater")}
+                                onChange={() =>
+                                    handleFilterChange("seater", "7 seater")
+                                }
+                            />
+                            7 Seater
+                        </label>
+                    </div>
+                    <div className="filter-group">
+                        <h4>Transmission</h4>
+                        <label>
+                            <input
+                                type="checkbox"
+                                value="automatic"
+                                checked={filters.transmission.includes(
+                                    "automatic"
+                                )}
+                                onChange={() =>
+                                    handleFilterChange(
+                                        "transmission",
+                                        "automatic"
+                                    )
+                                }
+                            />
+                            Automatic
+                        </label>
+                        <label>
+                            <input
+                                type="checkbox"
+                                value="manual"
+                                checked={filters.transmission.includes(
+                                    "manual"
+                                )}
+                                onChange={() =>
+                                    handleFilterChange("transmission", "manual")
+                                }
+                            />
+                            Manual
+                        </label>
+                    </div>
+                    <div className="filter-group">
+                        <h4>Price Range</h4>
                         <input
-                            type="checkbox"
-                            value="Petrol"
-                            checked={filters.fuelType.includes("Petrol")}
-                            onChange={() =>
-                                handleFilterChange("fuelType", "Petrol")
-                            }
+                            type="range"
+                            min={0}
+                            max={1000}
+                            value={filters.priceRange}
+                            onChange={handlePriceRangeChange}
                         />
-                        Petrol
-                    </label>
-                    <label>
-                        <input
-                            type="checkbox"
-                            value="Diesel"
-                            checked={filters.fuelType.includes("Diesel")}
-                            onChange={() =>
-                                handleFilterChange("fuelType", "Diesel")
-                            }
-                        />
-                        Diesel
-                    </label>
+                        <div>Max Price: ${filters.priceRange}</div>
+                    </div>
                 </div>
-                <div className="filter-group">
-                    <h4>Car Type</h4>
-                    <label>
-                        <input
-                            type="checkbox"
-                            value="SUV"
-                            checked={filters.carType.includes("SUV")}
-                            onChange={() =>
-                                handleFilterChange("carType", "SUV")
-                            }
-                        />
-                        SUV
-                    </label>
-                    <label>
-                        <input
-                            type="checkbox"
-                            value="Sedan"
-                            checked={filters.carType.includes("Sedan")}
-                            onChange={() =>
-                                handleFilterChange("carType", "Sedan")
-                            }
-                        />
-                        Sedan
-                    </label>
-                    <label>
-                        <input
-                            type="checkbox"
-                            value="Hatchback"
-                            checked={filters.carType.includes("Hatchback")}
-                            onChange={() =>
-                                handleFilterChange("carType", "Hatchback")
-                            }
-                        />
-                        Hatchback
-                    </label>
-                </div>
-                <div className="filter-group">
-                    <h4>Seater</h4>
-                    <label>
-                        <input
-                            type="checkbox"
-                            value="5 seater"
-                            checked={filters.seater.includes("5 seater")}
-                            onChange={() =>
-                                handleFilterChange("seater", "5 seater")
-                            }
-                        />
-                        5 Seater
-                    </label>
-                    <label>
-                        <input
-                            type="checkbox"
-                            value="7 seater"
-                            checked={filters.seater.includes("7 seater")}
-                            onChange={() =>
-                                handleFilterChange("seater", "7 seater")
-                            }
-                        />
-                        7 Seater
-                    </label>
-                </div>
-                <div className="filter-group">
-                    <h4>Transmission</h4>
-                    <label>
-                        <input
-                            type="checkbox"
-                            value="automatic"
-                            checked={filters.transmission.includes("automatic")}
-                            onChange={() =>
-                                handleFilterChange("transmission", "automatic")
-                            }
-                        />
-                        Automatic
-                    </label>
-                    <label>
-                        <input
-                            type="checkbox"
-                            value="manual"
-                            checked={filters.transmission.includes("manual")}
-                            onChange={() =>
-                                handleFilterChange("transmission", "manual")
-                            }
-                        />
-                        Manual
-                    </label>
-                </div>
-                <div className="filter-group">
-                    <h4>Price Range</h4>
-                    <input
-                        type="range"
-                        min={0}
-                        max={1000}
-                        value={filters.priceRange}
-                        onChange={handlePriceRangeChange}
-                    />
-                    <div>Max Price: ${filters.priceRange}</div>
+                <div className="main-content">
+                    <div className="car-list">
+                        {filteredCars.map((car) => (
+                            <Car
+                                key={car.id}
+                                carId={car.id}
+                                name={car.name}
+                                type={car.type}
+                                fuelType={car.fuelType}
+                                seater={car.seater}
+                                pricePerHour={car.pricing}
+                                imageUrl={car.images.image1}
+                                transmission={car.transmission}
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
-            <div className="main-content">
-                
-                <div className="car-list">
-                    {filteredCars.map((car) => (
-                        <Car
-                            carId={car.id}
-                            name={car.name}
-                            type={car.type}
-                            fuelType={car.fuelType}
-                            seater={car.seater}
-                            pricePerHour={car.pricing}
-                            imageUrl={car.images.image1}
-                            transmission={car.transmission}
-                        />
-                    ))}
-                </div>
-            </div>
-        </div>
-        <AboutUs/>
+            <AboutUs />
         </>
     );
 };

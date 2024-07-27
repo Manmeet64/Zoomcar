@@ -1,0 +1,43 @@
+.carMatchContainer {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.cardContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.carCard {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+.carCard:hover {
+    transform: scale(1.05);
+}
+
+.carImage {
+    width: 100%;
+    height: auto;
+}
+
+.carInfo {
+    padding: 15px;
+}
+
+.carInfo h2 {
+    font-size: 1.2em;
+    margin: 0;
+    color: #333;
+}
+
+.carInfo p {
+    margin: 8px 0;
+    color: #555;
+}

@@ -41,7 +41,8 @@ const Home = () => {
         document.body.appendChild(injectScript);
 
         const configScript = document.createElement("script");
-        configScript.src = "https://mediafiles.botpress.cloud/eb6f4087-e0f4-45d7-a7ae-765b02aaf7bb/webchat/v2/config.js";
+        configScript.src =
+            "https://mediafiles.botpress.cloud/eb6f4087-e0f4-45d7-a7ae-765b02aaf7bb/webchat/v2/config.js";
         configScript.async = true;
         document.body.appendChild(configScript);
 
@@ -119,18 +120,26 @@ const Home = () => {
 
     return (
         <>
-            <HourContext.Provider value={{ hoursDifference, setHoursDifference }}>
+            <HourContext.Provider
+                value={{ hoursDifference, setHoursDifference }}
+            >
                 <Navbar />
                 <div className={styles.home_head}>
                     <div className={styles.hero_section}>
-                        <h1>Looking for a <span className={styles.highlight}>vehicle</span>? You're at the right place.</h1>
+                        <h1>
+                            Looking for a{" "}
+                            <span className={styles.highlight}>vehicle</span>?
+                            You're at the right place.
+                        </h1>
                         <div className={styles.home_container}>
                             <div className={styles.input_group}>
                                 <label>Pick Up Location:</label>
                                 <input
                                     type="text"
                                     value={pickUpLocation}
-                                    onChange={(e) => setPickUpLocation(e.target.value)}
+                                    onChange={(e) =>
+                                        setPickUpLocation(e.target.value)
+                                    }
                                     className={styles.input_field}
                                     placeholder="From: Address"
                                 />
@@ -140,7 +149,9 @@ const Home = () => {
                                 <input
                                     type="datetime-local"
                                     value={pickUpDateTime}
-                                    onChange={(e) => setPickUpDateTime(e.target.value)}
+                                    onChange={(e) =>
+                                        setPickUpDateTime(e.target.value)
+                                    }
                                     className={styles.input_field}
                                 />
                             </div>
@@ -149,7 +160,9 @@ const Home = () => {
                                 <input
                                     type="text"
                                     value={dropOffLocation}
-                                    onChange={(e) => setDropOffLocation(e.target.value)}
+                                    onChange={(e) =>
+                                        setDropOffLocation(e.target.value)
+                                    }
                                     className={styles.input_field}
                                     placeholder="To: Address"
                                 />
@@ -159,7 +172,9 @@ const Home = () => {
                                 <input
                                     type="datetime-local"
                                     value={dropOffDateTime}
-                                    onChange={(e) => setDropOffDateTime(e.target.value)}
+                                    onChange={(e) =>
+                                        setDropOffDateTime(e.target.value)
+                                    }
                                     className={styles.input_field}
                                 />
                             </div>
